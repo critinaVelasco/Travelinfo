@@ -1,2 +1,4 @@
-package dte.masteriot.mdp.travelinfo;public class Brightness {
+package dte.masteriot.mdp.travelinfo;
+
+public class Brightness {
 }
