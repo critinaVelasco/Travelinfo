@@ -41,7 +41,7 @@ public class MyOnItemActivatedListener implements OnItemActivatedListener<Long> 
         Log.d(TAG, "Clicked item with position = " + itemdetails.getPosition()
                 + " and key = " + itemdetails.getSelectionKey());
 
-        Intent i = new Intent(context, Monuments.class);
+        Intent i = new Intent(context, InfoMonument.class);
         context.startActivity(i);
         return true;
     }

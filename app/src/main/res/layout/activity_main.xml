@@ -6,18 +6,10 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/appbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="CITIES"
-        android:textStyle="bold"
-        android:textSize="30dp"
-        android:textAlignment="center"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        />
+    <!-- Include the app bar layout -->
+    <include
+        android:id="@+id/mainToolbar"
+        layout="@layout/app_bar_layout" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -27,7 +19,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appbar"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/mainToolbar" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
