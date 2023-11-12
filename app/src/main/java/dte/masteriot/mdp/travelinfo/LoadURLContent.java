@@ -56,7 +56,7 @@ public class LoadURLContent implements Runnable {
             // Extract MIME type and subtype (get rid of the possible parameters present in the content-type header
             // Content-type: type/subtype;parameter1=value1;parameter2=value2...
             if((actualContentType != null) && (actualContentType.contains(";"))) {
-                Log.d("all XML", ": Complete HTTP content-type header from server = " + actualContentType);
+                Log.d("Working", ": Complete HTTP content-type header from server = " + actualContentType);
                 int beginparam = actualContentType.indexOf(";", 0);
                 actualContentType = actualContentType.substring(0, beginparam);
             }
@@ -72,6 +72,7 @@ public class LoadURLContent implements Runnable {
                 }
             }
 
+            Log.d("Test", "All XML: " + response);
             urlConnection.disconnect();
 
         } catch (Exception e) {
@@ -79,16 +80,13 @@ public class LoadURLContent implements Runnable {
         }
 
         list_monuments = get_monuments(response);
-
-        if ("".equals(response) == false && list_monuments.size() != 0) {
+        if (!"".equals(response) && list_monuments.size() != 0) {
             msg_data.putString("text", response);
             msg_data.putParcelableArrayList("monuments", list_monuments);
+            msg.sendToTarget();
+        } else {
+            Log.e("Working", "XML as not download or it was imposible to parce");
         }
-        else {
-            Log.e("all XML", "no se ha podido desargar el xml o hacer el parce");
-        }
-
-        msg.sendToTarget();
 
     }
 
@@ -110,22 +108,21 @@ public class LoadURLContent implements Runnable {
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 String elementName = null;
                 elementName = parser.getName(); // name of the current element
-
                 switch (eventType) {
                     case XmlPullParser.START_TAG:
                         if ("title".equals(elementName)) {
                             String monument = parser.nextText(); // if next element is TEXT then element content is returned
-                            monument = monument.substring(monument.indexOf("![CDATA[ ") + 9);
-                            monument = monument.substring(0, monument.indexOf(" ]]") - 3);
                             monuments.add(monument);
-                            Log.d("all XML", "title find" + monument);
+                            Log.d("Test", "title find" + monument);
 
                         }
+                    break;
                 }
-
+                eventType = parser.next(); // Get next parsing event
             }
 
         } catch (XmlPullParserException e) {
+            Log.d("all XML", "error");
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
