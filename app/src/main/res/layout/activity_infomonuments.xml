@@ -13,22 +13,19 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            tools:ignore="MissingConstraints" />
-
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/toolbar2"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="#808080"
+        <TextView
+            android:id="@+id/appbar"
+            android:layout_width="412dp"
+            android:layout_height="49dp"
+            android:background="#D08F30EF"
+            android:lineSpacingExtra="12sp"
             android:text="MONUMENT"
-            android:titleTextColor="#FF0000"
+            android:textAlignment="center"
+            android:textSize="30dp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/descriptionMonument"
@@ -39,8 +36,18 @@
             app:layout_constraintBottom_toTopOf="@+id/imageMonument"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/toolbar2" />
+            app:layout_constraintTop_toBottomOf="@+id/appbar" />
 
+
+        <Button
+            android:id="@+id/textToSpeechButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="424dp"
+            android:text="Read description"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/descriptionMonument"/>
 
         <ImageView
             android:id="@+id/imageMonument"
@@ -50,7 +57,7 @@
             android:layout_marginBottom="20dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/descriptionMonument"
+            app:layout_constraintTop_toBottomOf="@+id/textToSpeechButton"
             android:src="@drawable/ic_launcher_foreground"/>
 
         <TextView

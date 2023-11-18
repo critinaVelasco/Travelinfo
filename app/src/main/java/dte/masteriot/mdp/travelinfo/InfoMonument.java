@@ -2,45 +2,31 @@ package dte.masteriot.mdp.travelinfo;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.selection.ItemKeyProvider;
-import androidx.recyclerview.selection.SelectionTracker;
-import androidx.recyclerview.selection.StorageStrategy;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Intent;
+
 import android.graphics.Color;
 import android.net.Uri;
-import android.os.Bundle;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
-import android.view.View;
-import android.widget.ImageView;
-import android.widget.TextView;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -50,13 +36,19 @@ import org.xmlpull.v1.XmlPullParserFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.Locale;
 
-public class InfoMonument extends AppCompatActivity {
+import android.speech.tts.TextToSpeech;
+
+//import com.google.cloud.translate.Translate;
+//import com.google.cloud.translate.TranslateOptions;
+//import com.google.cloud.translate.Translation;
+
+public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnInitListener {
     private static final String TAG = "DATASET";
     XmlPullParserFactory parserFactory;
     String xmlText;
+    TextView appbar;
     TextView description;
     TextView url;
     String textDescription;
@@ -65,33 +57,62 @@ public class InfoMonument extends AppCompatActivity {
     String imageUrl;
     TextView address;
     String textAddress;
+    private TextToSpeech textToSpeech ;
+    private Button speakButton;
     String textWeb;
+    //String apiKey = getString(R.string.google_cloud_translate_api_key);
+    //Translate translate = TranslateOptions.newBuilder()
+    //        .setApiKey(apiKey)
+    //        .build()
+    //       .getService();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_infomonuments);
+        appbar = findViewById(R.id.appbar);
         description = findViewById(R.id.descriptionMonument);
         address = findViewById(R.id.address);
         imageView = findViewById(R.id.imageMonument);
         url = findViewById(R.id.url);
         chart = (LineChart) findViewById(R.id.chart);
         //setupToolbar();
-
+        textToSpeech = new TextToSpeech(this, this);
+        speakButton = findViewById(R.id.textToSpeechButton);
         // Get intent, action and type
         Intent intent = getIntent();
         String action = intent.getAction();
+
+        speakButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Llama al método para leer el texto
+                speakText(textDescription);
+          }
+        });
 
         if (Intent.ACTION_SEND.equals(action)) {
             xmlText = intent.getStringExtra("XML_TEXT");
             String monument = intent.getStringExtra("MONUMENT");
 
             if (monument != null && xmlText != null) {
+                appbar.setText(monument);
                 get_info_monuments(xmlText, monument);
             }
         }
 
     }
+
+    @Override
+    protected void onDestroy() {
+        // Libera los recursos de TextToSpeech cuando la actividad se destruye
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+        }
+        super.onDestroy();
+}
+
 
 
     public ArrayList get_info_monuments (String string_XML, String monument_to_find) {
@@ -132,6 +153,8 @@ public class InfoMonument extends AppCompatActivity {
                         else if ("description".equals(elementName)){
                             if (monument_found){
                                 textDescription = parser.nextText();
+                                //Translation translation = translate.translate(textDescription, Translate.TranslateOption.targetLanguage("en"));
+                                //textDescription = translation.getTranslatedText();
                                 description.setText(Html.fromHtml(textDescription));
                             }
                         }
@@ -207,5 +230,24 @@ public class InfoMonument extends AppCompatActivity {
 
     }
 
+    private void speakText(String text) {
+        textToSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null, null);
+    }
+
+    @Override
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+            int langResult = textToSpeech.setLanguage(Locale.ENGLISH);
+
+            if (langResult == TextToSpeech.LANG_MISSING_DATA ||
+                    langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
+                // Handle language not supported
+            } else {
+                speakButton.setEnabled(true);
+            }
+        } else {
+            // Handle initialization failure
+        }
+    }
 }
 
