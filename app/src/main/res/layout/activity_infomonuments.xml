@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".Monuments">
+    tools:context=".InfoMonument">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -35,9 +35,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
-            android:layout_marginBottom="20dp"
             android:text="Description..."
-            app:layout_constraintBottom_toBottomOf="@+id/moreInfo"
+            app:layout_constraintBottom_toTopOf="@+id/imageMonument"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/toolbar2" />
@@ -48,12 +47,31 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
-            android:layout_marginTop="10dp"
             android:layout_marginBottom="20dp"
-            app:layout_constraintBottom_toBottomOf="@+id/moreInfo"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/descriptionMonument" />
+            app:layout_constraintTop_toBottomOf="@+id/descriptionMonument"
+            android:src="@drawable/ic_launcher_foreground"/>
+
+        <TextView
+            android:id="@+id/address"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:layout_marginLeft="50dp"
+            android:text="address:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/imageMonument"/>
+
+        <TextView
+            android:id="@+id/completeAddress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Baker Street"
+            app:layout_constraintStart_toEndOf="@+id/address"
+            app:layout_constraintTop_toBottomOf="@+id/imageMonument" />
 
         <TextView
             android:id="@+id/moreInfo"
@@ -64,7 +82,8 @@
             android:text="More info: "
             app:layout_constraintEnd_toStartOf="@+id/url"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/imageMonument" />
+            app:layout_constraintBottom_toTopOf="@+id/radioGroup"
+            app:layout_constraintTop_toBottomOf="@+id/address"/>
 
         <TextView
             android:id="@+id/url"
@@ -75,17 +94,17 @@
             android:text="url"
             app:layout_constraintBottom_toTopOf="@+id/radioGroup"
             app:layout_constraintStart_toEndOf="@+id/moreInfo"
-            app:layout_constraintTop_toBottomOf="@+id/imageMonument" />
+            app:layout_constraintTop_toBottomOf="@+id/address" />
 
         <RadioGroup
             android:id="@+id/radioGroup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toTopOf="@id/chart"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/moreInfo">
+            app:layout_constraintStart_toStartOf="parent" >
 
             <RadioButton
                 android:id="@+id/radioOption1"
@@ -104,7 +123,7 @@
                 android:text="2"
                 android:layout_marginEnd="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="radioOption1"
+                app:layout_constraintStart_toEndOf="@+id/radioOption1"
                 app:layout_constraintTop_toBottomOf="@+id/moreInfo" />
 
             <RadioButton
@@ -139,9 +158,17 @@
 
         </RadioGroup>
 
-
-
-
+        <!--suppress AndroidUnresolvableTag -->
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
+            android:layout_height="200sp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/radioGroup"
+            tools:ignore="MissingClass" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>
