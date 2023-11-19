@@ -1,8 +1,14 @@
 package dte.masteriot.mdp.travelinfo;
 
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -44,7 +50,7 @@ import android.speech.tts.TextToSpeech;
 //import com.google.cloud.translate.TranslateOptions;
 //import com.google.cloud.translate.Translation;
 
-public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnInitListener {
+public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnInitListener, SensorEventListener {
     private static final String TAG = "DATASET";
     XmlPullParserFactory parserFactory;
     String xmlText;
@@ -59,6 +65,8 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
     String textAddress;
     private TextToSpeech textToSpeech ;
     private Button speakButton;
+    private SensorManager sensorManager;
+    private Sensor lightSensor;
     String textWeb;
     //String apiKey = getString(R.string.google_cloud_translate_api_key);
     //Translate translate = TranslateOptions.newBuilder()
@@ -82,6 +90,14 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
         // Get intent, action and type
         Intent intent = getIntent();
         String action = intent.getAction();
+
+        // Get the reference to the sensor manager and the sensor:
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+
+        if (lightSensor != null) {
+            sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
 
         speakButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -249,5 +265,58 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
             // Handle initialization failure
         }
     }
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT){
+            float lightValue = sensorEvent.values[0];
+            if (lightValue < 10) {
+                // Ambiente muy oscuro, ajustar a un valor bajo
+                setBrightness(0.1f);
+            } else if (lightValue < 100) {
+                // Ambiente con poca luz, ajustar a un valor moderado
+                setBrightness(0.5f);
+            } else {
+                // Ambiente bien iluminado, ajustar a un valor alto
+                setBrightness(1.0f);
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (lightSensor != null) {
+            sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+    }
+
+    private void setBrightness(float brightness) {
+        // Verificar si el ajuste automático de brillo está habilitado y desactivarlo si es necesario
+        try {
+            int mode = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE);
+            if (mode == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC) {
+                Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+            }
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Ajustar el brillo de la pantalla
+        WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+        layoutParams.screenBrightness = brightness;
+        getWindow().setAttributes(layoutParams);
+    }
+
 }
 

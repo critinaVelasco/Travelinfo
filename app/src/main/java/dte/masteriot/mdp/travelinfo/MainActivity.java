@@ -1,14 +1,21 @@
 package dte.masteriot.mdp.travelinfo;
 
 
+import android.content.Context;
 import android.content.Intent;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -25,7 +32,7 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener{
 
     private static final String TAG = "DATASET";
 
@@ -40,6 +47,11 @@ public class MainActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private SelectionTracker<Long> tracker;
     private static final String URL_XML_MONUMENTS = "https://www.zaragoza.es/sede/servicio/monumento.xml";
+
+    private Context mContext;
+
+    private SensorManager sensorManager;
+    private Sensor lightSensor;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,6 +66,14 @@ public class MainActivity extends AppCompatActivity {
 
         LoadURLContent loadURLContents = new LoadURLContent(handler_initialXMLparce, URL_XML_MONUMENTS);
         es.execute(loadURLContents);
+
+        // Get the reference to the sensor manager and the sensor:
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT);
+
+        if (lightSensor != null) {
+            sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
 
         // Prepare the RecyclerView:
         recyclerView = findViewById(R.id.recyclerView);
@@ -126,5 +146,58 @@ public class MainActivity extends AppCompatActivity {
 
         }
     };
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT){
+            float lightValue = sensorEvent.values[0];
+            if (lightValue < 10) {
+                // Ambiente muy oscuro, ajustar a un valor bajo
+                setBrightness(0.1f);
+            } else if (lightValue < 100) {
+                // Ambiente con poca luz, ajustar a un valor moderado
+                setBrightness(0.5f);
+            } else {
+                // Ambiente bien iluminado, ajustar a un valor alto
+                setBrightness(1.0f);
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        sensorManager.unregisterListener(this);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (lightSensor != null) {
+            sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL);
+        }
+    }
+
+    private void setBrightness(float brightness) {
+        // Verificar si el ajuste automático de brillo está habilitado y desactivarlo si es necesario
+        try {
+            int mode = Settings.System.getInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE);
+            if (mode == Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC) {
+                Settings.System.putInt(getContentResolver(), Settings.System.SCREEN_BRIGHTNESS_MODE, Settings.System.SCREEN_BRIGHTNESS_MODE_MANUAL);
+            }
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        // Ajustar el brillo de la pantalla
+        WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
+        layoutParams.screenBrightness = brightness;
+        getWindow().setAttributes(layoutParams);
+    }
 
 }

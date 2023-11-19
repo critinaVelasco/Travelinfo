@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Travelinfo</string>
+    <string name="app_name">CityWanderer</string>
     <string name="google_cloud_translate_api_key">AIzaSyDrY_lfGYazvTK42FG2VkC_QlnROaLTqzc</string>
 
 </resources>
