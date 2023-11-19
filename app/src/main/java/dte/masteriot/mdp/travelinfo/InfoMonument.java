@@ -103,7 +103,7 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
             @Override
             public void onClick(View v) {
                 // Llama al método para leer el texto
-                speakText(textDescription);
+                speakText(String.valueOf(Html.fromHtml(textDescription)));
           }
         });
 
@@ -253,7 +253,8 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
     @Override
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
-            int langResult = textToSpeech.setLanguage(Locale.ENGLISH);
+            //int langResult = textToSpeech.setLanguage(Locale.ENGLISH);
+            int langResult = textToSpeech.setLanguage(new Locale("es", "ES"));
 
             if (langResult == TextToSpeech.LANG_MISSING_DATA ||
                     langResult == TextToSpeech.LANG_NOT_SUPPORTED) {
