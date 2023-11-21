@@ -9,8 +9,11 @@ import android.text.Html;
 import android.text.SpannableString;
 import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,6 +30,16 @@ import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 public class MainActivity extends AppCompatActivity {
 
     TextView description;
@@ -35,6 +48,12 @@ public class MainActivity extends AppCompatActivity {
     ImageView imageView;
     LineChart chart;
     String imageUrl;
+    RadioGroup radioGroup;
+    final String serverUri = "tcp://192.168.56.1:1883";
+    final String subscriptionTopic = "concurrentTopic";
+    final String publishTopic = "concurrentPublishTopic";
+    MqttAndroidClient mqttAndroidClient;
+    String clientId = "Client";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +64,41 @@ public class MainActivity extends AppCompatActivity {
         imageView = findViewById(R.id.imageMonument);
         url = findViewById(R.id.url);
         chart = (LineChart) findViewById(R.id.chart);
+        radioGroup = findViewById(R.id.radioGroup);
+
+        clientId = clientId + System.currentTimeMillis();
+
+        mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), serverUri, clientId);
+        mqttAndroidClient.setCallback(new MqttCallbackExtended() {
+            @Override
+            public void connectComplete(boolean reconnect, String serverURI) {
+
+                if (reconnect) {
+                    Log.d("MQTT", "Reconnected to MQTT server");
+                    // Because Clean Session is true, we need to re-subscribe
+                }else{
+                    Log.d("MQTT", "Connected to MQTT server for the first time");
+                }
+            }
+
+            @Override
+            public void connectionLost(Throwable cause) {
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) {
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+
+            }
+        });
+
+        MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
+        mqttConnectOptions.setAutomaticReconnect(true);
+        mqttConnectOptions.setCleanSession(true);
+
 
         // List of datasets:
         List<ILineDataSet> dataSets = new ArrayList<ILineDataSet>();
@@ -96,5 +150,49 @@ public class MainActivity extends AppCompatActivity {
         chart.getDescription().setEnabled(false);
         chart.animateX(3000); // animation to draw chart
         chart.invalidate(); // refresh
+
+        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+
+                if (mqttAndroidClient.isConnected()) {
+                    RadioButton radioButton = findViewById(checkedId);
+                    MqttMessage message = new MqttMessage();
+
+                    // Obtener el texto del RadioButton seleccionado
+                    String mensaje = radioButton.getText().toString();
+                    message.setPayload(mensaje.getBytes());
+                    message.setRetained(false);
+                    message.setQos(1);
+                    // Enviar el mensaje MQTT
+                    try {
+                        mqttAndroidClient.publish(publishTopic, message);
+                    } catch (MqttException e) {
+                        e.printStackTrace();
+                    }
+                    if (!mqttAndroidClient.isConnected()) {
+                        Log.d("MQTT","Client not connected!");
+                    }
+                }else{
+                    Log.d("MQTT","Client not connected!");
+                }
+            }
+        });
+    }
+    public void subscribeToTopic() {
+        try {
+            mqttAndroidClient.subscribe(subscriptionTopic, 0, null, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+        }
+
     }
 }
