@@ -27,6 +27,16 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
+import org.eclipse.paho.client.mqttv3.IMqttActionListener;
+import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
+import org.eclipse.paho.client.mqttv3.IMqttToken;
+import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
@@ -52,10 +62,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private SensorManager sensorManager;
     private Sensor lightSensor;
+
+    // MQTT
+    final String mqttServerUri = "tcp://192.168.56.1:1883";
+    String publishMessage = "Hello World!";
+    MqttAndroidClient mqttAndroidClient;
+    MqttConnectOptions mqttConnectOptions;
+    Long tsLong = System.currentTimeMillis()/1000;
+    String clientId = "client" + tsLong.toString();
+    String tmpString;
+    private static MainActivity instance; // implemented to use publish() from InfoMonuments.java
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        instance = this;
         //setupToolbar();
 
         // Create an executor for the background tasks:
@@ -104,6 +125,43 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // Restore state related to selections previously made
             tracker.onRestoreInstanceState(savedInstanceState);
         }
+
+        clientId = clientId + System.currentTimeMillis();
+
+        mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), mqttServerUri, clientId);
+        mqttAndroidClient.setCallback(new MqttCallbackExtended() {
+            @Override
+            public void connectComplete(boolean reconnect, String serverURI) {
+
+                if (reconnect) {
+                    addToHistory("Reconnected to : " + serverURI);
+                } else {
+                    addToHistory("Connected to: " + serverURI);
+                }
+            }
+
+            @Override
+            public void connectionLost(Throwable cause) {
+                addToHistory("The Connection was lost.");
+            }
+
+            @Override
+            public void messageArrived(String topic, MqttMessage message) {
+                addToHistory(topic + "  Incoming message: " + new String(message.getPayload()));
+            }
+
+            @Override
+            public void deliveryComplete(IMqttDeliveryToken token) {
+
+            }
+        });
+
+        mqttConnectOptions = new MqttConnectOptions();
+        mqttConnectOptions.setAutomaticReconnect(true);
+        mqttConnectOptions.setCleanSession(false); // so that we dont need to resubscribe if disconnect() happens
+
+        addToHistory("Connecting to " + mqttServerUri + "...");
+        mqttConnect(mqttConnectOptions);
     }
 
     @Override
@@ -141,6 +199,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
             // change dataset
             dataset.setNewData(monumentNameList);
+            resetTopics();
             recyclerView.getAdapter().notifyDataSetChanged();
             onItemActivatedListener.set_XML_text(xmlText);
 
@@ -200,4 +259,86 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         getWindow().setAttributes(layoutParams);
     }
 
+    private void mqttConnect(MqttConnectOptions mqttConnectOptions) {
+        try {
+            mqttAndroidClient.connect(mqttConnectOptions, null, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
+                    disconnectedBufferOptions.setBufferEnabled(true);
+                    disconnectedBufferOptions.setBufferSize(100);
+                    disconnectedBufferOptions.setPersistBuffer(false);
+                    disconnectedBufferOptions.setDeleteOldestMessages(false);
+                    mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
+                    subscribeToTopic("status");
+                    //subscribeToAllDatasetTopics();
+                    String topic = "";
+                    for (int i=0; i< 1; i++) {
+                        topic = dataset.getItemAtPosition(i).getTopic();
+                        addToHistory("AllSubs: " + topic);
+                        subscribeToTopic("testTopic");
+                    }
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    addToHistory("Failed to connect to: " + mqttServerUri +
+                            ". Cause: " + ((exception.getCause() == null)?
+                            exception.toString() : exception.getCause()));
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+            addToHistory(e.toString());
+        }
+    }
+
+    private void addToHistory(String mainText) {
+        Log.d("MQTT", "LOG: " + mainText);
+    }
+
+    public void subscribeToTopic(String topic) {
+        try {
+            mqttAndroidClient.subscribe(topic, 0, null, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    addToHistory("Subscribed to: " + topic);
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    addToHistory("Failed to subscribe to: " + topic);
+                }
+            });
+        } catch (MqttException e) {
+            e.printStackTrace();
+            addToHistory(e.toString());
+        }
+
+    }
+
+    private void resetTopics() {
+        try {
+            // unsubscribe from all topics
+            mqttAndroidClient.unsubscribe("monuments/#");
+        } catch (MqttException e) {
+            e.printStackTrace();
+            addToHistory(e.toString());
+        }
+        // subscribe to new topics
+        for(int i=0; i<dataset.getSize();i++) {
+            tmpString = dataset.getItemAtPosition(i).getTopic();
+            addToHistory("Going to subscribe to: " + tmpString);
+            subscribeToTopic(tmpString);
+        }
+
+    }
+
+    public MqttAndroidClient getMqttClient() {
+        return this.mqttAndroidClient;
+    }
+
+    public static MainActivity getInstance() {
+        return instance;
+    }
 }

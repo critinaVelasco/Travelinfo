@@ -7,10 +7,13 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -35,6 +38,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
@@ -45,6 +50,9 @@ import java.io.InputStream;
 import java.util.Locale;
 
 import android.speech.tts.TextToSpeech;
+import android.widget.Toast;
+import org.eclipse.paho.android.service.MqttAndroidClient;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 //import com.google.cloud.translate.Translate;
 //import com.google.cloud.translate.TranslateOptions;
@@ -68,6 +76,11 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
     private SensorManager sensorManager;
     private Sensor lightSensor;
     String textWeb;
+    RadioGroup radioGroup;
+    Button mqttButton;
+    String specificTopic;
+    MqttAndroidClient mqttClient;
+
     //String apiKey = getString(R.string.google_cloud_translate_api_key);
     //Translate translate = TranslateOptions.newBuilder()
     //        .setApiKey(apiKey)
@@ -87,9 +100,13 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
         //setupToolbar();
         textToSpeech = new TextToSpeech(this, this);
         speakButton = findViewById(R.id.textToSpeechButton);
+        radioGroup = findViewById(R.id.radioGroup);
+        mqttButton = findViewById(R.id.mqttButton);
         // Get intent, action and type
         Intent intent = getIntent();
         String action = intent.getAction();
+        specificTopic = intent.getStringExtra("TOPIC");
+        mqttClient = ((MainActivity) MainActivity.getInstance()).getMqttClient();
 
         // Get the reference to the sensor manager and the sensor:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -105,6 +122,29 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
                 // Llama al método para leer el texto
                 speakText(String.valueOf(Html.fromHtml(textDescription)));
           }
+        });
+
+        mqttButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // Find the selected radio button
+                int checkedRadioButtonId = radioGroup.getCheckedRadioButtonId();
+
+                if (checkedRadioButtonId != -1) {
+                    RadioButton checkedRadioButton = findViewById(checkedRadioButtonId);
+
+                    if (checkedRadioButton != null) {
+                        // Get the text of the selected radio button
+                        String selectedText = checkedRadioButton.getText().toString();
+                        publishMessage(mqttClient, specificTopic, selectedText);
+
+                        // Display in a popup message
+                        Toast.makeText(InfoMonument.this, "Thank you for your feedback!", Toast.LENGTH_SHORT).show();
+                    }
+                } else {
+                    // No radio button is selected
+                }
+            }
         });
 
         if (Intent.ACTION_SEND.equals(action)) {
@@ -318,6 +358,24 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
         layoutParams.screenBrightness = brightness;
         getWindow().setAttributes(layoutParams);
     }
+
+    public void publishMessage(MqttAndroidClient mqttClient, String topic, String msg) {
+        MqttMessage message = new MqttMessage();
+        message.setPayload(msg.getBytes());
+        message.setRetained(false);
+        message.setQos(0);
+        try {
+            mqttClient.publish(topic, message);
+            Log.d("MQTT_PUBLISH", topic + " " + msg);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.d("MQTT_PUBLISH", e.toString());
+        }
+        if (!mqttClient.isConnected()) {
+            Log.d("MQTT_PUBLISH", "CLIENT NOT CONNECTED");
+        }
+    }
+
 
 }
 
