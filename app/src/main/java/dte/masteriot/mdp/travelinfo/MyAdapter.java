@@ -55,6 +55,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyViewHolder> {
         return dataset.getSize();
     }
 
+
     // ------ Other methods useful for the app ------ //
 
     public Long getKeyAtPosition(int pos) {

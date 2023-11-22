@@ -27,6 +27,8 @@
         <activity
             android:name=".InfoMonument"
             android:exported="false" />
+        <!-- Mqtt Service -->
+        <service android:name="org.eclipse.paho.android.service.MqttService"/>
     </application>
 
 </manifest>

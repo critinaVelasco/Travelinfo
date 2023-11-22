@@ -7,16 +7,20 @@ public class Item {
     private static final String TAG = "DATASET";
     private String title;
     private Long key; // In this app we use keys of type Long
+    private String mqttTopic;
 
-    Item(String title, Long key) {
+    Item(String title, Long key, String topic) {
         Log.d(TAG, "Item to be created. Title = " + title + " key = " + Long.toString(key));
         this.title = title;
         this.key = key;
+        this.mqttTopic = topic;
     }
 
     public String getTitle() {
         return title;
     }
+
+    public String getTopic() { return mqttTopic;}
 
     public Long getKey() {
         return key;
@@ -27,5 +31,7 @@ public class Item {
     public boolean equals(Object other) {
         return this.key == ((Item) other).getKey();
     }
+
+
 
 }
