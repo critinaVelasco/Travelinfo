@@ -13,9 +13,12 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import android.provider.Settings;
+import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -43,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     ExecutorService es;
     MyOnItemActivatedListener onItemActivatedListener;
     private Dataset dataset;
+    private Button searchMonument;
+    private EditText editText;
 
     private RecyclerView recyclerView;
     private SelectionTracker<Long> tracker;
@@ -66,6 +71,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         LoadURLContent loadURLContents = new LoadURLContent(handler_initialXMLparce, URL_XML_MONUMENTS);
         es.execute(loadURLContents);
+        searchMonument = findViewById(R.id.buttonSearch);
+        editText = findViewById(R.id.plain_text_input);
 
         // Get the reference to the sensor manager and the sensor:
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -104,6 +111,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             // Restore state related to selections previously made
             tracker.onRestoreInstanceState(savedInstanceState);
         }
+
+        searchMonument.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String textForSearch = editText.getText().toString();
+                if (textForSearch == null){
+                    // change dataset
+                    dataset.setNewData(monumentNameList);
+                    recyclerView.getAdapter().notifyDataSetChanged();
+                    onItemActivatedListener.set_XML_text(xmlText);
+
+                } else {
+                    // change dataset
+                    dataset.setNewData(containsSubstring( monumentNameList, textForSearch ));
+                    recyclerView.getAdapter().notifyDataSetChanged();
+                    onItemActivatedListener.set_XML_text(xmlText);
+                }
+
+
+            }
+        });
     }
 
     @Override
@@ -198,6 +226,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
         layoutParams.screenBrightness = brightness;
         getWindow().setAttributes(layoutParams);
+    }
+
+    // Función para verificar si un String coincide con alguna parte de los elementos en ArrayList
+    public static ArrayList<String> containsSubstring(ArrayList<String> list, String word) {
+        ArrayList<String> searchList = new ArrayList<>();
+        for (String element : list) {
+            if (element.contains(word)) {
+                searchList.add(element);
+
+            }
+        }
+        return searchList;
+
     }
 
 }
