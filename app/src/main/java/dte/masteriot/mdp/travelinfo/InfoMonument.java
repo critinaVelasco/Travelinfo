@@ -131,9 +131,7 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
 
 
 
-    public ArrayList get_info_monuments (String string_XML, String monument_to_find) {
-
-        ArrayList info_monuments = new ArrayList<>(); // This string will contain the loaded contents of a text resource
+    public void get_info_monuments (String string_XML, String monument_to_find) {
 
         try {
 
@@ -169,8 +167,6 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
                         else if ("description".equals(elementName)){
                             if (monument_found){
                                 textDescription = parser.nextText();
-                                //Translation translation = translate.translate(textDescription, Translate.TranslateOption.targetLanguage("en"));
-                                //textDescription = translation.getTranslatedText();
                                 description.setText(Html.fromHtml(textDescription));
                             }
                         }
@@ -212,8 +208,6 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return info_monuments;
 
     }
 
@@ -271,13 +265,13 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
         if (sensorEvent.sensor.getType() == Sensor.TYPE_LIGHT){
             float lightValue = sensorEvent.values[0];
             if (lightValue < 10) {
-                // Ambiente muy oscuro, ajustar a un valor bajo
+                //Very dark environment, adjust to a low value.
                 setBrightness(0.1f);
             } else if (lightValue < 100) {
-                // Ambiente con poca luz, ajustar a un valor moderado
+                // Low-light environment, adjust to a moderate value.
                 setBrightness(0.5f);
             } else {
-                // Ambiente bien iluminado, ajustar a un valor alto
+                // Well-lit environment, adjust to a high value.
                 setBrightness(1.0f);
             }
         }

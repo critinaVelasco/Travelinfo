@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 
 
 public class LoadURLContent implements Runnable {
@@ -79,6 +80,7 @@ public class LoadURLContent implements Runnable {
         }
 
         list_monuments = get_monuments(response);
+        Collections.sort(list_monuments);
 
         if ("".equals(response) == false && list_monuments.size() != 0) {
             msg_data.putString("text", response);
