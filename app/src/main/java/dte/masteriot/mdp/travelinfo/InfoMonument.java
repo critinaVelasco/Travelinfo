@@ -171,9 +171,7 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
 
 
 
-    public ArrayList get_info_monuments (String string_XML, String monument_to_find) {
-
-        ArrayList info_monuments = new ArrayList<>(); // This string will contain the loaded contents of a text resource
+    public void get_info_monuments (String string_XML, String monument_to_find) {
 
         try {
 
@@ -252,8 +250,6 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        return info_monuments;
 
     }
 
