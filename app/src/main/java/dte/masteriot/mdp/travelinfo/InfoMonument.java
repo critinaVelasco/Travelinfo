@@ -12,6 +12,8 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.appcompat.widget.Toolbar;
+import com.google.android.material.appbar.AppBarLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,7 +56,8 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
     private static final String TAG = "DATASET";
     XmlPullParserFactory parserFactory;
     String xmlText;
-    TextView appbar;
+    //TextView appbar;
+    Toolbar appbar;
     TextView description;
     TextView url;
     String textDescription;
@@ -68,11 +71,6 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
     private SensorManager sensorManager;
     private Sensor lightSensor;
     String textWeb;
-    //String apiKey = getString(R.string.google_cloud_translate_api_key);
-    //Translate translate = TranslateOptions.newBuilder()
-    //        .setApiKey(apiKey)
-    //        .build()
-    //       .getService();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +82,6 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
         imageView = findViewById(R.id.imageMonument);
         url = findViewById(R.id.url);
         chart = (LineChart) findViewById(R.id.chart);
-        //setupToolbar();
         textToSpeech = new TextToSpeech(this, this);
         speakButton = findViewById(R.id.textToSpeechButton);
         // Get intent, action and type
@@ -112,7 +109,9 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
             String monument = intent.getStringExtra("MONUMENT");
 
             if (monument != null && xmlText != null) {
-                appbar.setText(monument);
+                appbar.setTitle(monument);
+                // Configurar la ActionBar para usar la Toolbar
+                setSupportActionBar(appbar);
                 get_info_monuments(xmlText, monument);
             }
         }

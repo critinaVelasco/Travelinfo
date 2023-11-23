@@ -13,19 +13,24 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/appbar"
-            android:layout_width="412dp"
-            android:layout_height="49dp"
-            android:background="#D08F30EF"
-            android:lineSpacingExtra="12sp"
-            android:text="MONUMENT"
-            android:textAlignment="center"
-            android:textSize="30dp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
+        <!-- Agrega el AppBarLayout -->
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/app_bar_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            tools:ignore="MissingConstraints">
+
+            <!-- Agrega la Toolbar -->
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/appbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:background="#E97B51EA"
+                app:subtitleTextColor="#FFFFFF"
+                app:title="MONUMENT"
+                app:titleTextColor="#FFFFFF" />
+        </com.google.android.material.appbar.AppBarLayout>
 
         <TextView
             android:id="@+id/descriptionMonument"
@@ -36,7 +41,7 @@
             app:layout_constraintBottom_toTopOf="@+id/imageMonument"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/appbar" />
+            app:layout_constraintTop_toBottomOf="@+id/app_bar_layout" />
 
 
         <Button
