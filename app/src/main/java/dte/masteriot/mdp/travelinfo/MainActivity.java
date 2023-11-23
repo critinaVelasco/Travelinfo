@@ -65,7 +65,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     // MQTT
     final String mqttServerUri = "tcp://192.168.56.1:1883";
-    String publishMessage = "Hello World!";
     MqttAndroidClient mqttAndroidClient;
     MqttConnectOptions mqttConnectOptions;
     Long tsLong = System.currentTimeMillis()/1000;
@@ -127,6 +126,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
         clientId = clientId + System.currentTimeMillis();
+
+        addToHistory("Going to create MQTT client...");
 
         mqttAndroidClient = new MqttAndroidClient(getApplicationContext(), mqttServerUri, clientId);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
@@ -299,6 +300,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void subscribeToTopic(String topic) {
         try {
+            if (!mqttAndroidClient.isConnected()) {
+                addToHistory("MQTT client not connected, return");
+                return;
+            }
             mqttAndroidClient.subscribe(topic, 0, null, new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
@@ -318,6 +323,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     private void resetTopics() {
+        if (!mqttAndroidClient.isConnected()) {
+            addToHistory("MQTT client not connected, return");
+            return;
+        }
         try {
             // unsubscribe from all topics
             mqttAndroidClient.unsubscribe("monuments/#");
