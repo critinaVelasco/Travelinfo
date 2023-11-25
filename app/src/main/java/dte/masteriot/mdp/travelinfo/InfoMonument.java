@@ -362,7 +362,7 @@ public class InfoMonument extends AppCompatActivity implements TextToSpeech.OnIn
         message.setQos(0);
         try {
             mqttClient.publish(topic, message);
-            Log.d("MQTT_PUBLISH", topic + " " + msg);
+            Log.d("MQTT_PUBLISH", "topic: " + topic + " msg: " + msg);
         } catch (Exception e) {
             e.printStackTrace();
             Log.d("MQTT_PUBLISH", e.toString());

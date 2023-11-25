@@ -57,9 +57,6 @@ public class Dataset {
         }
     }
 
-    public void createMqttTopics() {
-        //
-    }
 
     void removeItemAtPosition(int i) {
         listofitems.remove(i);
@@ -67,6 +64,15 @@ public class Dataset {
 
     void removeItemWithKey(Long key) {
         removeItemAtPosition(getPositionOfKey(key));
+    }
+
+    public Item searchItemByTopic(String searchTopic) {
+        for (Item item : listofitems) {
+            if (item.getTopic().equals(searchTopic)) {
+                return item; // Found the item with the specified topic
+            }
+        }
+        return null; // Item not found
     }
 
 }

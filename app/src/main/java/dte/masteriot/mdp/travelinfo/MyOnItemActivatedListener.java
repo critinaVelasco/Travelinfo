@@ -48,6 +48,7 @@ public class MyOnItemActivatedListener implements OnItemActivatedListener<Long> 
         i.setAction(Intent.ACTION_SEND);
         i.putExtra("XML_TEXT", xmlText);
         i.putExtra("MONUMENT", monument);
+        i.putExtra("TOPIC", dataset.getItemAtPosition(itemdetails.getPosition()).getTopic());
         context.startActivity(i);
         return true;
     }
